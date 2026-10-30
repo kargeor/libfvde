@@ -12,6 +12,10 @@ Param (
 	[string]$VSToolsPath = "..\vstools"
 )
 
+# Diagnostic branch: always build the configuration of the AppVeyor vs2022-vsdebug job
+$Configuration = "VSDebug"
+$Platform = "Win32"
+
 $ExitSuccess = 0
 $ExitFailure = 1
 

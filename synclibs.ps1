@@ -6,6 +6,10 @@ Param (
 	[switch]$UseHead = $false
 )
 
+# Diagnostic branch: use the tagged library versions, as the AppVeyor jobs do
+$UseHead = $false
+
+
 $GitUrlPrefix = "https://github.com/libyal"
 $LocalLibs = "libbfio libcaes libcdata libcerror libcfile libclocale libcnotify libcpath libcsplit libcthreads libfcache libfdata libfguid libfplist libfvalue libhmac libuna"
 $LocalLibs = ${LocalLibs} -split " "
@@ -121,5 +125,14 @@ ForEach (${LocalLib} in ${LocalLibs})
 		Write-Host ${Output}
 	}
 }
+
+
+# Diagnostic branch: apply the proposed libcaes fix for the MSVC /RTCc failure in libcaes_crypt_xts
+$CaesFile = "libcaes\libcaes_tweaked_context.c"
+$CaesOld = "byte_value = ( encrypted_tweak_value[ block_index ] << 1 ) | carry_bit;"
+$CaesNew = "byte_value = ( ( encrypted_tweak_value[ block_index ] << 1 ) | carry_bit ) & 0xff;"
+$CaesText = Get-Content -Raw ${CaesFile}
+Write-Host "libcaes fix: $(([regex]::Matches(${CaesText}, [regex]::Escape(${CaesOld}))).Count) occurrences replaced"
+Set-Content -NoNewline -Path ${CaesFile} -Value ${CaesText}.Replace(${CaesOld}, ${CaesNew})
 
 Exit ${Result}
